@@ -62,3 +62,35 @@ async def submit_score(submission: ScoreSubmission):
         raise HTTPException(status_code=500, detail="Failed to submit score")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/find-one")
+async def find_one():
+    result =  await collection.find_one({"name": "Laos"})
+    return {"name" : result["name"]}
+
+
+@app.get("/regions")
+async def regions():
+    regions = await collection.distinct("region")
+    regionsList = [{"region": region} for region in regions]
+    return regionsList
+
+
+@app.get("/sub-regions")
+async def subRegions():
+    subRegions = await collection.distinct("subregion")
+    subRegionsList = [{"subregion": subRegion} for subRegion in subRegions]
+    return subRegionsList
+
+@app.get("/get-countries-by-region")
+async def getCountriesByRegion(region: str):
+    countries = []
+    async for country in collection.find({"region": {"$eq": region}}).sort("name"):
+        countries.append({
+            "country": country["name"],
+            "flag": country["flag"],
+            "region": country["region"]
+        })
+
+    return countries
